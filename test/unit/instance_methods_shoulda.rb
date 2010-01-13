@@ -19,7 +19,7 @@ class InstanceMethodsTest < Test::Unit::TestCase
     context "when checking whether indexing is disabled" do
     
       setup do
-        @instance.configuration = {:if => true}
+        @instance.configuration = {:if => true, :fields => [:name]}
       end
   
       should "return true if the specified proc returns true " do
@@ -117,6 +117,36 @@ class InstanceMethodsTest < Test::Unit::TestCase
         should "destroy the document if :if clause is false" do
           @instance.configuration.merge!(:if => "false")
           @instance.expects(:solr_destroy).once
+          @instance.solr_save
+        end
+      end
+      
+      context "when no indexed fields have changed" do
+        setup do
+          @instance.configuration = {:fields => [:name], :if => "true", :auto_commit => true}
+          @instance.stubs(:to_solr_doc).returns("My test document")
+          @instance.stubs(:changed).returns([])
+        end
+  
+        should "just return and do nothing" do
+          assert !@instance.indexed_fields_have_changed?
+          @instance.expects(:solr_add).never
+          @instance.expects(:solr_destroy).never
+          assert @instance.solr_save
+        end
+      end
+      
+      context "when indexed fields have changed" do
+        setup do
+          @instance.configuration = {:fields => [:name], :if => "true", :auto_commit => true}
+          @instance.stubs(:to_solr_doc).returns("My test document")
+          @instance.stubs(:solr_commit)
+        end
+  
+        should "call solr_save" do
+          assert @instance.indexed_fields_have_changed?
+          assert !@instance.indexing_disabled?
+          @instance.expects(:solr_add).with("My test document").once
           @instance.solr_save
         end
       end

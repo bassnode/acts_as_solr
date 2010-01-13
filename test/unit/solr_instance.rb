@@ -43,4 +43,13 @@ class SolrInstance
   def get_solr_field_type(args)
     "s"
   end
+  
+  def new_record?
+    false
+  end
+  
+  def changed
+    ['name']
+  end
+  
 end

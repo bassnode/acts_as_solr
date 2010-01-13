@@ -29,7 +29,7 @@ module ActsAsSolr #:nodoc:
     # changed.  If not, return false. New records always return true.
     def indexed_fields_have_changed?
       return true if new_record?
-      @stringified_solr_field_names ||= configuration[:solr_fields].keys.map(&:to_s)
+      @stringified_solr_field_names ||= configuration[:fields].map(&:to_s)
 
       changed.each do |field|
         return true if @stringified_solr_field_names.include?(field)

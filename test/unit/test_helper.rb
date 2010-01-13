@@ -10,5 +10,5 @@ if RUBY_VERSION =~ /^1\.9/
 end
 
 require 'mocha'
-gem 'thoughtbot-shoulda'
+gem 'shoulda'
 require 'shoulda'

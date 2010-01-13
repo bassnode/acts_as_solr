@@ -6,10 +6,11 @@ module ActsAsSolr #:nodoc:
     def solr_id
       "#{self.class.name}:#{record_id(self)}"
     end
-
+    
     # saves to the Solr index
     def solr_save
       return true if indexing_disabled?
+      return true unless indexed_fields_have_changed?
       if evaluate_condition(:if, self) 
         logger.debug "solr_save: #{self.class.name} : #{record_id(self)}"
         solr_add to_solr_doc
@@ -22,6 +23,18 @@ module ActsAsSolr #:nodoc:
 
     def indexing_disabled?
       evaluate_condition(:offline, self) || !configuration[:if]
+    end
+    
+    # Determines whether fields we have configured to be indexed have
+    # changed.  If not, return false. New records always return true.
+    def indexed_fields_have_changed?
+      return true if new_record?
+      @stringified_solr_field_names ||= configuration[:solr_fields].keys.map(&:to_s)
+
+      changed.each do |field|
+        return true if @stringified_solr_field_names.include?(field)
+      end
+      return false
     end
 
     # remove from index

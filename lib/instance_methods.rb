@@ -8,9 +8,12 @@ module ActsAsSolr #:nodoc:
     end
     
     # saves to the Solr index
-    def solr_save
+    def solr_save(reindex=false)
       return true if indexing_disabled?
-      return true unless indexed_fields_have_changed?
+      if !indexed_fields_have_changed?
+        return true unless reindex
+      end
+      
       if evaluate_condition(:if, self) 
         logger.debug "solr_save: #{self.class.name} : #{record_id(self)}"
         solr_add to_solr_doc
